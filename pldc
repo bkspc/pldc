@@ -1,0 +1,21 @@
+#!/bin/sh
+#to disable ethernet isolation port 1 to 4
+while [ $(cli /home/cli/hal/l2/l2_isolt_get -v port 0 | grep -c "isolt : 1" ) -eq 1 ] ; do sleep 1;done
+j=0;for i in 1 2 4 8 ; do
+cli /home/cli/hal/l2/l2_isolt_set -v port $j isolt $i
+j=$((j+1))
+done
+while [ $(ifconfig wan0 | grep "inet addr:" -c) -ne 1 ] ; do sleep 1 ; done
+for i in $(cli /home/cli/hal/flow/ifc_dump > /dev/null && dmesg | grep "up_svlan=" | sed -r 's/^.*ifc_id=([0-9]+).*/\1/')
+do
+cli /home/cli/hal/flow/ifc_delbyifcid -v ifcid $i
+done
+
+#if you have own dhcp server this will solve some issues
+#for i in $(cli /home/cli/hal/flow/ifc_dump > /dev/null && dmesg | grep "ethtype=0x800 frame=0x1 ipver=0x1 proto=17 sport=68 dport=67" -A1 | sed -r 's/^.*ifc_id=([0-9]+).*/\1/' | grep -Ev '(ifc|--)')
+#do cli /home/cli/hal/flow/ifc_delbyifcid -v ifcid $i
+#done
+
+#because I'ts annoying
+while [ $(cat /fhcfg/web_accout_enable) -eq 1 ] ; do sleep 1;done
+echo 1 > /fhcfg/web_accout_enable
