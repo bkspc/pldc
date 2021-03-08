@@ -19,3 +19,7 @@ done
 #because I'ts annoying
 while [ $(cat /fhcfg/web_accout_enable) -eq 1 ] ; do sleep 1;done
 echo 1 > /fhcfg/web_accout_enable
+
+# disable webs on boot
+a=$(cat /fh/extend/initialize.sh | grep ./runWeb.sh) b="./runWeb.sh"
+if [ "$a" = "$b" ]; then sed -i '/^[^#]/ s/\(^.*runWeb.*$\)/#\1/' /fh/extend/initialize.sh && sed -i '/^[^#]/ s/\(^.*httpclient.*$\)/#\1/' /fh/extend/initialize.sh && reboot; else echo "webs is already disabled"; fi
